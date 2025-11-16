@@ -11,12 +11,13 @@ const app: Express = express();
 const port = process.env.PORT || 5000;
 const corsOptions = {
     origin: ['http://localhost:8080',
-            'https://news-client-iota.vercel.app/'],
+            'https://news-client-iota.vercel.app'],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true,               // <- allows Access-Control-Allow-Credentials: true
   allowedHeaders: ['Content-Type','Authorization'] // optional
 };
 app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 // handle preflight for all routes (optional but safe)
 // app.options('*', cors(corsOptions));
 app.use(express.json());
