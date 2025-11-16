@@ -38,7 +38,7 @@ app.options('*', cors(corsOptions)); // preflight handler
 app.use(express.json());
 
 // Routes
-app.use('/api/auth/v1', authRoutes);
+app.use('/api/auth', authRoutes);
 app.use('/api/news', newsRoutes);
 
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/news-app';
