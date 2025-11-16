@@ -9,32 +9,48 @@ dotenv.config();
 
 const app: Express = express();
 const port = process.env.PORT || 5000;
+
+// whitelist (dev + prod)
+const whitelist = [
+  'http://localhost:3000',
+  'http://localhost:8080',
+  'https://news-client-iota.vercel.app' // note: NO trailing slash
+];
+
+// function-origin cors options (safer for credentials)
 const corsOptions = {
-    origin: ["https://news-client-iota.vercel.app"],
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    credentials: true,               // <- allows Access-Control-Allow-Credentials: true
-  allowedHeaders: ['Content-Type','Authorization'] // optional
+  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+    // allow requests with no origin (curl, Postman, server-to-server)
+    if (!origin) return callback(null, true);
+    if (whitelist.indexOf(origin) !== -1) return callback(null, true);
+    return callback(new Error('Not allowed by CORS'));
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  credentials: true,
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+  exposedHeaders: ['Content-Length']
 };
+
+// IMPORTANT: apply CORS BEFORE routes and handle preflight early
 app.use(cors(corsOptions));
-app.options('*', cors(corsOptions));
-// handle preflight for all routes (optional but safe)
-// app.options('*', cors(corsOptions));
+app.options('*', cors(corsOptions)); // preflight handler
+
 app.use(express.json());
 
-// Define Routes
+// Routes
 app.use('/api/auth/v1', authRoutes);
 app.use('/api/news', newsRoutes);
 
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/news-app';
 
 mongoose.connect(MONGO_URI)
-    .then(() => console.log('MongoDB connected'))
-    .catch(err => console.log(err));
+  .then(() => console.log('MongoDB connected'))
+  .catch(err => console.log('MongoDB connection error:', err));
 
 app.get('/', (req: Request, res: Response) => {
-    res.send('Express + TypeScript Server');
+  res.send('Express + TypeScript Server');
 });
 
 app.listen(port, () => {
-    console.log(`[server]: Server is running at http://localhost:${port}`);
+  console.log(`[server]: Server is running on port ${port}`);
 });
