@@ -4,7 +4,7 @@ import mongoose from 'mongoose';
 import cors from 'cors';
 import authRoutes from './routes/auth';
 import newsRoutes from './routes/news';
-
+import connectDb from './config/connection';
 dotenv.config();
 
 const app: Express = express();
@@ -34,18 +34,13 @@ const corsOptions = {
 // IMPORTANT: apply CORS BEFORE routes and handle preflight early
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions)); // preflight handler
-
+connectDb();
 app.use(express.json());
 
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/news', newsRoutes);
 
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/news-app';
-
-mongoose.connect(MONGO_URI)
-  .then(() => console.log('MongoDB connected'))
-  .catch(err => console.log('MongoDB connection error:', err));
 
 app.get('/', (req: Request, res: Response) => {
   res.send('Express + TypeScript Server');
@@ -54,3 +49,5 @@ app.get('/', (req: Request, res: Response) => {
 app.listen(port, () => {
   console.log(`[server]: Server is running on port ${port}`);
 });
+
+
