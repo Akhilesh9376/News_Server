@@ -19,10 +19,19 @@ const whitelist = [
 
 // function-origin cors options (safer for credentials)
 const corsOptions = {
-  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+  origin: (origin: string | undefined, callback: (err: Error | null, allow?: string | boolean) => void) => {
     // allow requests with no origin (curl, Postman, server-to-server)
-    if (!origin) return callback(null, true);
-    if (whitelist.indexOf(origin) !== -1) return callback(null, true);
+    if (!origin) {
+      console.log('[CORS] no origin (server-to-server or curl). Allowing.');
+      return callback(null, true);
+    }
+    // debug log so you can see what the browser is sending
+    console.log(`[CORS] request origin: ${origin}`);
+    if (whitelist.indexOf(origin) !== -1) {
+      // IMPORTANT: return the origin string here (not boolean true) so the header is the exact origin
+      return callback(null, origin);
+    }
+    console.warn(`[CORS] blocked origin: ${origin}`);
     return callback(new Error('Not allowed by CORS'));
   },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -30,10 +39,28 @@ const corsOptions = {
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
   exposedHeaders: ['Content-Length']
 };
-
-// IMPORTANT: apply CORS BEFORE routes and handle preflight early
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions)); // preflight handler
+
+// ----------------- add a small fallback header setter (optional but useful) -----------------
+app.use((req, res, next) => {
+  const origin = req.header('Origin') || '';
+  if (!origin) return next();
+  if (whitelist.includes(origin)) {
+    // echo origin explicitly (must not be '*')
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept');
+  }
+  // fast-return for preflight
+  if (req.method === 'OPTIONS') return res.sendStatus(204);
+  next();
+});
+
+// // IMPORTANT: apply CORS BEFORE routes and handle preflight early
+// app.use(cors(corsOptions));
+// app.options('*', cors(corsOptions)); // preflight handler
 connectDb();
 app.use(express.json());
 
