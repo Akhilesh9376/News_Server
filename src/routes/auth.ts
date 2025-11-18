@@ -8,8 +8,8 @@ import {
 import auth from '../middleware/auth';
 
 const router = Router();
-
 router.post('/register', register);
+// @route   POST api/auth/login
 // @desc    Login employee
 // @access  Public
 router.post('/login', login);

@@ -14,7 +14,9 @@ const port = process.env.PORT || 5000;
 const whitelist = [
   'http://localhost:3000',
   'http://localhost:8080',
-  'https://news-client-iota.vercel.app' // note: NO trailing slash
+  'https://news-client-iota.vercel.app',
+  'https://news-client-iota.vercel.app/', // trailing slash variant
+  'https://news-client-iota.vercel.app:443' // explicit port
 ];
 
 // function-origin cors options (safer for credentials)
@@ -65,7 +67,7 @@ connectDb();
 app.use(express.json());
 
 // Routes
-app.use('/api/auth', authRoutes);
+app.use('/api/auth/v1', authRoutes);
 app.use('/api/news', newsRoutes);
 
 
