@@ -41,6 +41,8 @@ const corsOptions = {
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
   exposedHeaders: ['Content-Length']
 };
+
+
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions)); // preflight handler
 
