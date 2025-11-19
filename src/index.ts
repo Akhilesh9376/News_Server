@@ -10,37 +10,46 @@ dotenv.config();
 const app: Express = express();
 const port = process.env.PORT || 5000;
 
-// whitelist (dev + prod)
 const whitelist = [
   'http://localhost:3000',
   'http://localhost:8080',
-  'https://news-client-iota.vercel.app',
-  'https://news-client-iota.vercel.app/', // trailing slash variant
-  'https://news-client-iota.vercel.app:443' // explicit port
+  'https://news-client-iota.vercel.app'
 ];
 
+
 // function-origin cors options (safer for credentials)
+// const corsOptions = {
+//   origin: (origin: string | undefined, callback: (err: Error | null, allow?: string | boolean) => void) => {
+//     // allow requests with no origin (curl, Postman, server-to-server)
+//     if (!origin) {
+//       console.log('[CORS] no origin (server-to-server or curl). Allowing.');
+//       return callback(null, true);
+//     }
+//     // debug log so you can see what the browser is sending
+//     console.log(`[CORS] request origin: ${origin}`);
+//     if (whitelist.indexOf(origin) !== -1) {
+//       // IMPORTANT: return the origin string here (not boolean true) so the header is the exact origin
+//       return callback(null, origin);
+//     }
+//     console.warn(`[CORS] blocked origin: ${origin}`);
+//     return callback(new Error('Not allowed by CORS'));
+//   },
+//   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+//   credentials: true,
+//   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+//   exposedHeaders: ['Content-Length']
+// };
 const corsOptions = {
   origin: (origin: string | undefined, callback: (err: Error | null, allow?: string | boolean) => void) => {
-    // allow requests with no origin (curl, Postman, server-to-server)
-    if (!origin) {
-      console.log('[CORS] no origin (server-to-server or curl). Allowing.');
-      return callback(null, true);
+    if (!origin) return callback(null, true); // allow server-to-server/curl
+    if (whitelist.includes(origin)) {
+      return callback(null, true); // allow
     }
-    // debug log so you can see what the browser is sending
-    console.log(`[CORS] request origin: ${origin}`);
-    if (whitelist.indexOf(origin) !== -1) {
-      // IMPORTANT: return the origin string here (not boolean true) so the header is the exact origin
-      return callback(null, origin);
-    }
-    console.warn(`[CORS] blocked origin: ${origin}`);
     return callback(new Error('Not allowed by CORS'));
   },
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   credentials: true,
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
-  exposedHeaders: ['Content-Length']
 };
+
 
 
 app.use(cors(corsOptions));
