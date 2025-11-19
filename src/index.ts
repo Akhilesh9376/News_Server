@@ -34,7 +34,8 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-app.options('*', cors(corsOptions)); // preflight handler
+// app.options('*', cors(corsOptions)); // preflight handler
+
 
 connectDb();
 app.use(express.json());

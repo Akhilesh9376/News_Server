@@ -34,7 +34,7 @@ const corsOptions = {
     credentials: true,
 };
 app.use((0, cors_1.default)(corsOptions));
-app.options('*', (0, cors_1.default)(corsOptions)); // preflight handler
+// app.options('*', cors(corsOptions)); // preflight handler
 (0, connection_1.default)();
 app.use(express_1.default.json());
 // Routes
