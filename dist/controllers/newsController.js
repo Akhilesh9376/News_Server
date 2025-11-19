@@ -171,14 +171,14 @@ const deleteNews = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
 exports.deleteNews = deleteNews;
 // Get news authored by the logged-in employee with pagination and optional filters
 const getMyNews = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
+    var _b;
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
     const search = req.query.search || '';
     const category = req.query.category || '';
     try {
-        const employee = yield Employee_1.default.findById((_a = req.employee) === null || _a === void 0 ? void 0 : _a.id).select('-password');
+        const employee = yield Employee_1.default.findById((_b = req.employee) === null || _b === void 0 ? void 0 : _b.id).select('-password');
         if (!employee) {
             return res.status(404).json({ message: 'Employee not found' });
         }

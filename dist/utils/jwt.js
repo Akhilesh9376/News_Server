@@ -3,9 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getJwtSecret = getJwtSecret;
-exports.getJwtExpiresIn = getJwtExpiresIn;
-exports.signToken = signToken;
+exports.signToken = exports.getJwtExpiresIn = exports.getJwtSecret = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 function getJwtSecret() {
     const raw = (process.env.JWT_SECRET || 'your_jwt_secret').trim();
@@ -14,6 +12,7 @@ function getJwtSecret() {
     }
     return raw;
 }
+exports.getJwtSecret = getJwtSecret;
 // Basic validator for expiresIn; falls back to '1h' if invalid
 function getJwtExpiresIn() {
     const raw = (process.env.JWT_EXPIRES_IN || '3600').trim();
@@ -28,8 +27,10 @@ function getJwtExpiresIn() {
     // fallback to 1 hour
     return 3600;
 }
+exports.getJwtExpiresIn = getJwtExpiresIn;
 function signToken(payload, options = {}) {
     const secret = getJwtSecret();
     const expiresIn = getJwtExpiresIn();
     return jsonwebtoken_1.default.sign(payload, secret, Object.assign({ expiresIn }, options));
 }
+exports.signToken = signToken;
