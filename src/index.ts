@@ -15,6 +15,11 @@ const whitelist = [
   'http://localhost:8080',
   'https://news-client-iota.vercel.app'
 ];
+app.use((req, res, next) => {
+  console.log('[DEBUG] Origin header received:', req.headers.origin);
+  next();
+});
+
 
 const corsOptions = {
   origin: (origin: string | undefined, callback: (err: Error | null, allow?: string | boolean) => void) => {
