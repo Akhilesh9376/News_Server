@@ -127,10 +127,10 @@ export const updateNews = async (req: AuthRequest, res: Response) => {
 
         // For this example, we allow any authenticated employee to edit.
         // In a real-world scenario, you might want to check if the employee is the author.
-        // const employee = await Employee.findById(req.employee?.id);
-        // if (news.employeeName !== employee?.name) {
-        //     return res.status(401).json({ message: 'User not authorized' });
-        // }
+        const employee = await Employee.findById(req.employee?.id);
+        if (news.employeeName !== employee?.name) {
+            return res.status(401).json({ message: 'User not authorized' });
+        }
 
         const {
             heading,
@@ -169,7 +169,21 @@ export const deleteNews = async (req: AuthRequest, res: Response) => {
             return res.status(404).json({ message: 'News not found' });
         }
 
-        // Similar to update, you might want to add an ownership check here.
+        // Ensure the request is authenticated and employee info is available
+        if (!req.employee?.id) {
+            return res.status(401).json({ message: 'Not authenticated' });
+        }
+
+        // Load the authenticated employee and compare ownership by name
+        const employee = await Employee.findById(req.employee.id).select('-password');
+        if (!employee) {
+            return res.status(404).json({ message: 'Employee not found' });
+        }
+
+        // Compare by the stored employeeName on the news document
+        if (news.employeeName !== employee.name) {
+            return res.status(403).send('You are not allowed to delete this article');
+        }
 
         await news.deleteOne(); // Using deleteOne() on the document
 
