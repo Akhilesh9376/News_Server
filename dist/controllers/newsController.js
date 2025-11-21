@@ -116,6 +116,7 @@ const createNews = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
 exports.createNews = createNews;
 // Update a news article
 const updateNews = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
         let news = yield News_1.default.findById(req.params.id);
         if (!news) {
@@ -123,10 +124,10 @@ const updateNews = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         }
         // For this example, we allow any authenticated employee to edit.
         // In a real-world scenario, you might want to check if the employee is the author.
-        // const employee = await Employee.findById(req.employee?.id);
-        // if (news.employeeName !== employee?.name) {
-        //     return res.status(401).json({ message: 'User not authorized' });
-        // }
+        const employee = yield Employee_1.default.findById((_a = req.employee) === null || _a === void 0 ? void 0 : _a.id);
+        if (news.employeeName !== (employee === null || employee === void 0 ? void 0 : employee.name)) {
+            return res.status(401).json({ message: 'User not authorized' });
+        }
         const { heading, subheading, content, category, imageUrl } = req.body;
         const updatedFields = {};
         if (heading)
@@ -151,12 +152,25 @@ const updateNews = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
 exports.updateNews = updateNews;
 // Delete a news article
 const deleteNews = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
         const news = yield News_1.default.findById(req.params.id);
         if (!news) {
             return res.status(404).json({ message: 'News not found' });
         }
-        // Similar to update, you might want to add an ownership check here.
+        // Ensure the request is authenticated and employee info is available
+        if (!((_a = req.employee) === null || _a === void 0 ? void 0 : _a.id)) {
+            return res.status(401).json({ message: 'Not authenticated' });
+        }
+        // Load the authenticated employee and compare ownership by name
+        const employee = yield Employee_1.default.findById(req.employee.id).select('-password');
+        if (!employee) {
+            return res.status(404).json({ message: 'Employee not found' });
+        }
+        // Compare by the stored employeeName on the news document
+        if (news.employeeName !== employee.name) {
+            return res.status(403).send('You are not allowed to delete this article');
+        }
         yield news.deleteOne(); // Using deleteOne() on the document
         res.json({ message: 'News removed' });
     }
@@ -171,14 +185,14 @@ const deleteNews = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
 exports.deleteNews = deleteNews;
 // Get news authored by the logged-in employee with pagination and optional filters
 const getMyNews = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _b;
+    var _a;
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
     const search = req.query.search || '';
     const category = req.query.category || '';
     try {
-        const employee = yield Employee_1.default.findById((_b = req.employee) === null || _b === void 0 ? void 0 : _b.id).select('-password');
+        const employee = yield Employee_1.default.findById((_a = req.employee) === null || _a === void 0 ? void 0 : _a.id).select('-password');
         if (!employee) {
             return res.status(404).json({ message: 'Employee not found' });
         }
