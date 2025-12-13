@@ -15,7 +15,8 @@ const port = process.env.PORT || 5000;
 const whitelist = [
     'http://localhost:3000',
     'http://localhost:8080',
-    'https://news-client-iota.vercel.app'
+    'https://news-client-iota.vercel.app',
+    'https://up-uday-news.vercel.app'
 ];
 app.use((req, res, next) => {
     console.log('[DEBUG] Origin header received:', req.headers.origin);
